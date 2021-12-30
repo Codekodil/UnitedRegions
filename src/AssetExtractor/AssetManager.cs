@@ -89,12 +89,27 @@ namespace AssetExtractor
 
         public class TextureIdsAttribute : Attribute
         {
-            public int TextureId { get; }
-            public int PaletteId { get; }
+            public TextureLoader.IdOrFilter TextureId { get; }
+            public TextureLoader.IdOrFilter PaletteId { get; }
             public TextureIdsAttribute(int textureId, int paletteId)
             {
-                TextureId = textureId;
-                PaletteId = paletteId;
+                TextureId = new TextureLoader.IdOrFilter() { Id = textureId };
+                PaletteId = new TextureLoader.IdOrFilter() { Id = paletteId };
+            }
+            public TextureIdsAttribute(string textureFilter, int paletteId)
+            {
+                TextureId = new TextureLoader.IdOrFilter() { Filter = textureFilter };
+                PaletteId = new TextureLoader.IdOrFilter() { Id = paletteId };
+            }
+            public TextureIdsAttribute(int textureId, string paletteFilter)
+            {
+                TextureId = new TextureLoader.IdOrFilter() { Id = textureId };
+                PaletteId = new TextureLoader.IdOrFilter() { Filter = paletteFilter };
+            }
+            public TextureIdsAttribute(string textureFilter, string paletteFilter)
+            {
+                TextureId = new TextureLoader.IdOrFilter() { Filter = textureFilter };
+                PaletteId = new TextureLoader.IdOrFilter() { Filter = paletteFilter };
             }
         }
         public class TextureAsset<T> : BaseAsset<T> where T : class
@@ -103,7 +118,7 @@ namespace AssetExtractor
             {
                 var instance = Activator.CreateInstance<T>();
                 var properties = new List<PropertyInfo>();
-                var ids = new List<Tuple<int, int>>();
+                var ids = new List<(TextureLoader.IdOrFilter, TextureLoader.IdOrFilter)>();
 
                 foreach (var property in typeof(T).GetProperties())
                 {
@@ -115,7 +130,7 @@ namespace AssetExtractor
                         continue;
 
                     properties.Add(property);
-                    ids.Add(Tuple.Create(idAttribute.TextureId, idAttribute.PaletteId));
+                    ids.Add((idAttribute.TextureId, idAttribute.PaletteId));
                 }
 
                 var textures = TextureLoader.Load(Paths[0], ids).ToList();
@@ -123,9 +138,13 @@ namespace AssetExtractor
                 for (var i = 0; i < properties.Count; ++i)
                     properties[i].SetMethod.Invoke(instance, new[] { textures[i] });
 
+                CallAfterInit(instance);
+
                 return instance;
             }
         }
 
+        private static void CallAfterInit(object asset) =>
+            asset.GetType().GetMethod("AfterInit")?.Invoke(asset, new object[0]);
     }
 }

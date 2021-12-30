@@ -45,6 +45,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes.cs" />
     <Compile Include="Component.cs" />
     <Compile Include="MapEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

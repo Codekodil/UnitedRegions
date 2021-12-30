@@ -1,9 +1,12 @@
-﻿using MapEngine;
+﻿using MapData;
+using MapData.Tile;
+using MapEngine;
 using UnhedderEngine;
 using UnhedderEngine.Input;
 
 namespace MapGameplay
 {
+    [Priority(1)]
     public class SMoveable : MapSystem
     {
         public override void OnUpdate(FrameData data)
@@ -15,10 +18,11 @@ namespace MapGameplay
                 if (sqr == 0)
                 {
                     if (moveable.NextMove == default)
-                        return;
+                        continue;
                     ChangePosition(moveable);
-                    moveable.NextMove = default;
                     sqr = moveable.Offset.SqrLength;
+                    if (sqr == 0)
+                        continue;
                 }
                 var availableDistance = data.DeltaTime * moveable.Speed;
                 if (availableDistance * availableDistance >= sqr)
@@ -26,7 +30,6 @@ namespace MapGameplay
                     if (moveable.NextMove != default)
                     {
                         ChangePosition(moveable);
-                        moveable.NextMove = default;
                         if (availableDistance * availableDistance >= moveable.Offset.SqrLength)
                             UpdateOffset(moveable, Vec3.Zero);
                         else
@@ -52,10 +55,52 @@ namespace MapGameplay
         }
 
 
-        private static void ChangePosition(CMoveable moveable)
+        private void ChangePosition(CMoveable moveable)
         {
-            moveable.Entity.Position += moveable.NextMove;
-            moveable.Offset += new Vec3(-moveable.NextMove.X, 0, moveable.NextMove.Y);
+            if (World.LogicPaused)
+            {
+                moveable.NextMove = default;
+                return;
+            }
+            var orientation = moveable.Entity.Get<COrientation>();
+            if (orientation != null)
+            {
+                if (moveable.NextMove.X > 0)
+                    orientation.Direction = COrientation.EDirection.Right;
+                else if (moveable.NextMove.X < 0)
+                    orientation.Direction = COrientation.EDirection.Left;
+                else if (moveable.NextMove.Y > 0)
+                    orientation.Direction = COrientation.EDirection.Forward;
+                else if (moveable.NextMove.Y < 0)
+                    orientation.Direction = COrientation.EDirection.Backward;
+            }
+            var newPosition = moveable.Entity.Position + moveable.NextMove;
+            if (!moveable.Blockable || !IsPositionBlocked(moveable, newPosition))
+            {
+                moveable.Entity.Position = newPosition;
+                moveable.Offset += new Vec3(-moveable.NextMove.X, 0, moveable.NextMove.Y);
+            }
+            moveable.NextMove = default;
+        }
+
+        private static bool IsPositionBlocked(CMoveable moveable, Coord pos)
+        {
+            var map = moveable.Entity.Map;
+            if (map == null) return true;
+            var field = map.GetTile(pos);
+            if (field.HasWalkable())
+                return false;
+            if (field.HasBlocking())
+                return true;
+
+            switch (field)
+            {
+                default:
+#if DEBUG
+                    System.Diagnostics.Debugger.Break();
+#endif
+                    return true;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AssetExtractor;
+using GameplaySwitch;
 using Gen4Assets;
 using MapData;
 using MapEngine;
@@ -18,6 +19,7 @@ namespace PocketEngine
     /// </summary>
     public partial class MainWindow : Window
     {
+        private World _world;
         public MainWindow()
         {
             RomLoader.EnsureAssetsExist();
@@ -25,27 +27,50 @@ namespace PocketEngine
 
             var assets = new CommonMapAssets();
 
-            var world = new World();
-            world.AddSystem<SMoveable>();
-            world.AddSystem<SRendering>();
-            var player = world.NewEntity();
-            player.Add<CMoveable>().Speed = 6;
-            player.Add<CRendering>();
-            player.Add<CSprite>().Texture = assets.FemalePlayer.Value.Backward;
+            var mainSwitch = new MainSwitch();
 
-            for (var i = 0; i < 4; ++i)
-            {
-                var npc = world.NewEntity();
-                npc.Position = new Coord(i - 2, 5);
-                npc.Add<CRendering>();
-                npc.Add<CSprite>().Texture = assets.FemalePlayer.Value.Backward;
-            }
+            _world = new World();
+            foreach (var type in typeof(CPlayer).Assembly.GetTypes())
+                if (typeof(MapSystem).IsAssignableFrom(type))
+                    _world.AddSystem(type);
+
+            _world.GetSystem<SCameraManager>().CameraOffset = new Vec3(0, 32, 24);
 
             var generator = new RandomGenerator(69);
             generator.GenerateMap();
+            _world.AddMap("main", generator.Map);
+
+            _world.ShouldPauseLogic += () => !mainSwitch.ShowingWorld;
 
 
-            var scene = world.Scene;
+            var player = _world.NewEntity("main");
+            player.Add<CPlayer>();
+            player.Add<CMovedByInput>();
+            player.Add<CMoveable>().Speed = 4;
+            player.Get<CMoveable>().Blockable = true;
+            player.Add<COrientation>().Direction = COrientation.EDirection.Left;
+            {
+                var sprite = player.Add<CSprite>();
+                sprite.Textures = assets.FemalePlayer.Value.Frames;
+                sprite.RightIndex = 3;
+                sprite.BackwardIndex = 6;
+                sprite.LeftIndex = 9;
+                sprite.AnimationOffsets = new[] { 0, 1, 0, 2 };
+                sprite.OnlyAnimateWhenMoving = true;
+                sprite.AnimationFps = 8;
+            }
+
+            for (var i = 0; i < 4; ++i)
+            {
+                var npc = _world.NewEntity("main");
+                npc.Position = new Coord(i - 2, 5);
+                npc.Add<CSprite>().Textures = assets.FemalePlayer.Value.Frames;
+            }
+
+            player.Map = generator.Map;
+
+
+            var scene = _world.GetScene("main");
 
             for (var x = 0; x < 5; ++x)
                 for (var y = 0; y < 5; ++y)
@@ -67,45 +92,30 @@ namespace PocketEngine
                 scene.Add(renderer);
 
 
-            Camera camera = new Camera { Position = Vec3.Up * 30, Rotation = Quaternion.LookAt(new Vec3(0, -4, -3), Vec3.Up), Scene = scene };
-            camera.SetFoV(Math.Pi * .15f);
+
+            mainSwitch.CameraChange += camera =>
+            {
+                mainDisplay.Camera = camera;
+            };
+            mainSwitch.EnterWorld(_world);
+
+            _world.GetSystem<SPlayer>().StepOntoTallGrass += p =>
+            {
+                mainSwitch.SwitchToBattle();
+            };
+
             Camera cameraWide = new Camera { Position = Vec3.Up * 100, Rotation = Quaternion.LookAt(new Vec3(0, -4, -3), Vec3.Up), Scene = scene };
             Camera cameraAngle = new Camera { Position = Vec3.Up * 10, Rotation = Quaternion.LookAt(new Vec3(-1, -1, -2), Vec3.Up), Scene = scene };
 
-            DataContext = new { camera, cameraWide, cameraAngle };
-            camera.SetFoV(Math.Pi * .15f);
-
-            camera.Update += data =>
-            {
-                lock (_keys)
-                {
-                    var move = new Coord(
-                        (_keys.Contains(Key.A) ? -1 : 0) + (_keys.Contains(Key.D) ? 1 : 0),
-                        (_keys.Contains(Key.S) ? -1 : 0) + (_keys.Contains(Key.W) ? 1 : 0));
-                    if (move.Y != 0) move.X = 0;
-                    player.Get<CMoveable>().NextMove = move;
-                }
-                var focusPosition = player.CenterVec;
-                foreach (var cam in new[] { camera, cameraWide, cameraAngle })
-                {
-                    var forward = cam.Rotation.Forward;
-                    cam.Position = focusPosition + forward / forward.Y * cam.Position.Y;
-                }
-            };
+            DataContext = new { cameraWide, cameraAngle };
         }
 
         private readonly HashSet<Key> _keys = new HashSet<Key>();
 
-        private void UnhedderWpf_KeyDown(object sender, KeyEventArgs e)
-        {
-            lock (_keys)
-                _keys.Add(e.Key);
-        }
+        private void UnhedderWpf_KeyDown(object sender, KeyEventArgs e) =>
+            _world.GetSystem<SInput>().KeyDown(e.Key.ToString());
 
-        private void UnhedderWpf_KeyUp(object sender, KeyEventArgs e)
-        {
-            lock (_keys)
-                _keys.Remove(e.Key);
-        }
+        private void UnhedderWpf_KeyUp(object sender, KeyEventArgs e) =>
+            _world.GetSystem<SInput>().KeyUp(e.Key.ToString());
     }
 }

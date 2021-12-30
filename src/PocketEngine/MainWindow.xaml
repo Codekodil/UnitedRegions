@@ -19,7 +19,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <UnhedderEngine:UnhedderWpf Camera="{Binding camera}" Grid.RowSpan="3" KeyDown="UnhedderWpf_KeyDown" KeyUp="UnhedderWpf_KeyUp"/>
+        <UnhedderEngine:UnhedderWpf x:Name="mainDisplay"  Grid.RowSpan="3" KeyDown="UnhedderWpf_KeyDown" KeyUp="UnhedderWpf_KeyUp"/>
         <GridSplitter Grid.Column="1" Grid.RowSpan="3" HorizontalAlignment="Stretch"/>
         <DockPanel Grid.Column="2">
             <Label x:Name="NoClipLabel" DockPanel.Dock="Top" Visibility="Collapsed">NoClip</Label>

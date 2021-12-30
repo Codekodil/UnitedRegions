@@ -102,6 +102,10 @@
       <Project>{44228A1D-1334-4D96-91C0-B10466FC2B40}</Project>
       <Name>AssetExtractor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GameplaySwitch\GameplaySwitch.csproj">
+      <Project>{3A1C1DD8-E784-4D78-A53E-7D603E69AC95}</Project>
+      <Name>GameplaySwitch</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Gen4Assets\Gen4Assets.csproj">
       <Project>{6946F7A0-D327-40B8-8762-DF5D5E9EBD4C}</Project>
       <Name>Gen4Assets</Name>

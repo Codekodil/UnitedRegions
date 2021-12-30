@@ -1,6 +1,4 @@
 ﻿using AssetExtractor;
-using System;
-using System.Collections.Generic;
 using UnhedderEngine;
 
 namespace Gen4Assets
@@ -57,10 +55,34 @@ namespace Gen4Assets
 
 
         [Path(EGame.Platinum, "data", "mmodel", "mmodel.narc")]
-        [File("mmodel_91.BTX0")] public TextureAsset<FemalePlayerClass> FemalePlayer { get; private set; }
-        public class FemalePlayerClass
+        [File("mmodel_91.BTX0")] public TextureAsset<NpcTextures> FemalePlayer { get; private set; }
+        public class NpcTextures
         {
-            [TextureIds(27, 0)] public Texture Backward { get; private set; }
+            public void AfterInit()
+            {
+                Frames = new Texture[] {
+                    Forward, ForwardWalk1, ForwardWalk2,
+                    Right, RightWalk1, RightWalk2,
+                    Backward, BackwardWalk1, BackwardWalk2,
+                    Left, LeftWalk1, LeftWalk2
+                };
+            }
+            public Texture[] Frames { get; private set; }
+            [TextureIds(".*\\.1", 0)] public Texture Forward { get; private set; }
+            [TextureIds(".*\\.2", 0)] public Texture ForwardWalk1 { get; private set; }
+            [TextureIds(".*\\.4", 0)] public Texture ForwardWalk2 { get; private set; }
+
+            [TextureIds(".*\\.13", 0)] public Texture Right { get; private set; }
+            [TextureIds(".*\\.14", 0)] public Texture RightWalk1 { get; private set; }
+            [TextureIds(".*\\.16", 0)] public Texture RightWalk2 { get; private set; }
+
+            [TextureIds(".*\\.5", 0)] public Texture Backward { get; private set; }
+            [TextureIds(".*\\.6", 0)] public Texture BackwardWalk1 { get; private set; }
+            [TextureIds(".*\\.8", 0)] public Texture BackwardWalk2 { get; private set; }
+
+            [TextureIds(".*\\.9", 0)] public Texture Left { get; private set; }
+            [TextureIds(".*\\.10", 0)] public Texture LeftWalk1 { get; private set; }
+            [TextureIds(".*\\.12", 0)] public Texture LeftWalk2 { get; private set; }
         }
     }
 }

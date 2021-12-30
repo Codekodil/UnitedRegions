@@ -11,6 +11,15 @@ namespace MapEngine
 
         public World World { get; private set; }
         internal MapEntity(World world) => World = world;
+        internal Map _map;
+        public Map Map
+        {
+            get => _map;
+            set
+            {
+
+            }
+        }
 
 
         public Coord Position { get; set; }
@@ -46,7 +55,11 @@ namespace MapEngine
             lock (_locker)
             {
                 if (Disposed) return null;
-                if (_components.ContainsKey(typeof(T))) throw new ArgumentException();
+                if (_components.ContainsKey(typeof(T))) throw new ArgumentException($"entity already has component {typeof(T)}");
+
+                if (typeof(T).IsAbstract)
+                    throw new ArgumentException($"type {typeof(T)} is abstract");
+
                 T component;
                 try
                 {

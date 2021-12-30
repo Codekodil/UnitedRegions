@@ -46,11 +46,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CCameraFocus.cs" />
     <Compile Include="CMoveable.cs" />
+    <Compile Include="CMovedByInput.cs" />
+    <Compile Include="COrientation.cs" />
+    <Compile Include="CPlayer.cs" />
     <Compile Include="CRendering.cs" />
     <Compile Include="CSprite.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SCameraManager.cs" />
+    <Compile Include="SInput.cs" />
     <Compile Include="SMoveable.cs" />
+    <Compile Include="SPlayer.cs" />
     <Compile Include="SRendering.cs" />
   </ItemGroup>
   <ItemGroup>
