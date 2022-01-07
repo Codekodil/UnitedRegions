@@ -22,7 +22,8 @@ namespace AssetExtractor
                 if (File.Exists(successPath))
                     return;
 
-                MessageBox.Show($"{displayName} assets are missing. Please open a corresponding ROM.");
+                if (MessageBox.Show($"{displayName} assets are missing. Please open a corresponding ROM.", "Error", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+                    throw new FileNotFoundException();
                 while (true)
                 {
                     string file = null;
@@ -50,6 +51,7 @@ namespace AssetExtractor
                                     try
                                     {
                                         sis.Recursivo_UnpackFolder(sis.accion.Root);
+                                        sis.Recursivo_UnpackFolder(sis.accion.Root);
                                         if (Directory.Exists(path))
                                             Directory.Delete(path, true);
                                         sis.RecursivoExtractFolder(sis.accion.Root, path);
@@ -75,14 +77,21 @@ namespace AssetExtractor
                             sis.accion.Dispose();
                         }
                     }
-                    MessageBox.Show($"Invalid {displayName} File.");
+                    if (MessageBox.Show($"Invalid {displayName} File.", "Error", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+                        throw new FileNotFoundException();
                 }
             }
         }
+        private static bool _assetsChecked;
         public static void EnsureAssetsExist()
         {
-            EnsureRomExtracted(PlatinumPath, "Platinum", "Platinum");
-            EnsureRomExtracted(HgSsPath, "Heart Gold / Soul Silver", "HeartGold", "SoulSilver");
+            lock (_locker)
+            {
+                if (_assetsChecked) return;
+                EnsureRomExtracted(PlatinumPath, "Platinum", "Platinum");
+                EnsureRomExtracted(HgSsPath, "Heart Gold / Soul Silver", "HeartGold", "SoulSilver");
+                _assetsChecked = true;
+            }
         }
     }
 }

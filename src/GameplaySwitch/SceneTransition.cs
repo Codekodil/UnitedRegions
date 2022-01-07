@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnhedderEngine;
 using UnhedderEngine.Input;
 using UnhedderEngine.Workflows.Core;
+using Math = UnhedderEngine.Math;
 
 namespace GameplaySwitch
 {
@@ -65,6 +66,7 @@ vec4 Fragment()
                     _currentTransition.Value.Scene.Remove(renderer);
                 _originDisplay.Camera = null;
                 EventManager.Update -= OnUpdate;
+                _currentTransition = null;
             }
         }
         private void OnUpdate(FrameData data)
@@ -156,7 +158,8 @@ vec4 Fragment()
                         {
                             Mesh = v.Mesh,
                             Material = material,
-                            Transform = p.Item1
+                            Transform = p.Item1,
+                            Order = 1000000
                         };
                         scene.Add(treeRenderer);
                         renderers.Add(treeRenderer);
@@ -167,7 +170,7 @@ vec4 Fragment()
                     Renderers = renderers,
                     Length = 1,
                     Scene = scene,
-                    TransformAnimation = p => p * p,
+                    TransformAnimation = p => Math.Sqr(Math.Max(0f, p * 1.5f - .5f)),
                     ColorAnimation = p => p
                 });
             }

@@ -308,28 +308,29 @@ namespace DSDecmp
 
         internal static string Get_Traduction(string code)
         {
-            String message = "";
-            try
-            {
-                XElement xml = XElement.Load(System.Windows.Forms.Application.StartupPath + Path.DirectorySeparatorChar + "Tinke.xml");
-                string idioma = xml.Element("Options").Element("Language").Value;
-                xml = null;
+            return code;
+            //String message = "";
+            //try
+            //{
+            //    XElement xml = XElement.Load(System.Windows.Forms.Application.StartupPath + Path.DirectorySeparatorChar + "Tinke.xml");
+            //    string idioma = xml.Element("Options").Element("Language").Value;
+            //    xml = null;
 
-                foreach (string langFile in Directory.GetFiles(System.Windows.Forms.Application.StartupPath + Path.DirectorySeparatorChar + "langs"))
-                {
-                    if (!langFile.EndsWith(".xml"))
-                        continue;
+            //    foreach (string langFile in Directory.GetFiles(System.Windows.Forms.Application.StartupPath + Path.DirectorySeparatorChar + "langs"))
+            //    {
+            //        if (!langFile.EndsWith(".xml"))
+            //            continue;
 
-                    xml = XElement.Load(langFile);
-                    if (xml.Attribute("name").Value == idioma)
-                        break;
-                }
+            //        xml = XElement.Load(langFile);
+            //        if (xml.Attribute("name").Value == idioma)
+            //            break;
+            //    }
 
-                message = xml.Element("DSDecmp").Element(code).Value;
-            }
-            catch { throw new Exception("There was an error in the XML file of language."); }
+            //    message = xml.Element("DSDecmp").Element(code).Value;
+            //}
+            //catch { throw new Exception("There was an error in the XML file of language."); }
 
-            return message;
+            //return message;
         }
         internal static XElement Get_Traduction()
         {

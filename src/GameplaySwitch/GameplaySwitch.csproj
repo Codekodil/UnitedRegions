@@ -69,6 +69,10 @@
       <Project>{AE53C81A-B9FC-40D4-B3BB-1F0CA597D2D4}</Project>
       <Name>MapGameplay</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MonsterBattle\MonsterBattle.csproj">
+      <Project>{D6CD47CB-4F91-4C70-A92F-D26EF636C5E8}</Project>
+      <Name>MonsterBattle</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

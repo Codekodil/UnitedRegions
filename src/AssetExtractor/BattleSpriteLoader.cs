@@ -4,24 +4,26 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using UnhedderEngine;
+using Math = UnhedderEngine.Math;
 
 namespace AssetExtractor
 {
     public static class BattleSpriteLoader
     {
-        public static Texture LoadSprite(int id)
+        public static BattleSprite LoadSprite(int id, bool backSide, bool female, bool shiny)
         {
             RomLoader.EnsureAssetsExist();
-            using (var spriteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id + 2}.RGCN")))
+            using (var spriteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + (backSide ? 0 : 2) + (female ? 0 : 1)}.RGCN")))
             {
-                using (var paletteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id + 4}.RLCN")))
+                using (var paletteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + 4 + (shiny ? 1 : 0)}.RLCN")))
                 {
                     return LoadSprite(spriteStream, paletteStream);
                 }
             }
         }
-        public static Texture LoadSprite(Stream spriteStream, Stream paletteStream)
+        public static BattleSprite LoadSprite(Stream spriteStream, Stream paletteStream)
         {
+            //Original source: PokePicDS
             spriteStream.Seek(48L, SeekOrigin.Current);
             BinaryReader binaryReader = new BinaryReader(spriteStream);
             var numArray1 = new ushort[3200];
@@ -61,6 +63,8 @@ namespace AssetExtractor
                 palette.Entries[i] = Color.FromArgb((numArray[i] & 31) << 3, (numArray[i] >> 5 & 31) << 3, (numArray[i] >> 10 & 31) << 3);
             bitmapBuffer.Palette = palette;
 
+            var min = new Vec2(bitmapBuffer.Width / 2 - 1, bitmapBuffer.Height - 1);
+            var max = Vec2.Zero;
             var textureSource = new float[bitmapBuffer.Width * bitmapBuffer.Height * 4];
             var textureSourceIndex = 0;
             for (var y = bitmapBuffer.Height - 1; y >= 0; --y)
@@ -70,13 +74,23 @@ namespace AssetExtractor
                     textureSource[textureSourceIndex++] = pixel.R / 255f;
                     textureSource[textureSourceIndex++] = pixel.G / 255f;
                     textureSource[textureSourceIndex++] = pixel.B / 255f;
-                    textureSource[textureSourceIndex++] = source[x + y * bitmapBuffer.Width] == 0 ? 0 : 1;
+                    var transparent = source[x + y * bitmapBuffer.Width] == 0;
+                    textureSource[textureSourceIndex++] = transparent ? 0 : 1;
+                    if (!transparent)
+                    {
+                        var bbY = bitmapBuffer.Height - 1 - y;
+                        var bbX = x >= bitmapBuffer.Width / 2 ? x - bitmapBuffer.Width / 2 : x;
+                        max = Math.Max(max, new Vec2(bbX, bbY));
+                        min = Math.Min(min, new Vec2(bbX, bbY));
+                    }
                 }
 
 
             var texture = new Texture { Interpolation = false };
             texture.ApplyNewData(bitmapBuffer.Width, bitmapBuffer.Height, textureSource, BaseTexture.EColorChannel.Rgba);
-            return texture;
+            return new BattleSprite(texture,
+                min.Scaled(1f / (bitmapBuffer.Width / 2), 1f / bitmapBuffer.Height),
+                (min + Vec2.One).Scaled(1f / (bitmapBuffer.Width / 2), 1f / bitmapBuffer.Height));
         }
     }
 }

@@ -33,15 +33,42 @@ namespace AssetExtractor
         }
         public class FileAttribute : Attribute
         {
-            public FileAttribute(params string[] names) => Names = Array.AsReadOnly(names);
+            public FileAttribute(params string[] names)
+            {
+                for (var i = 0; i < names.Length; ++i)
+                    names[i] = System.IO.Path.Combine(names[i].Split('/'));
+                Names = Array.AsReadOnly(names);
+            }
             public IReadOnlyList<string> Names { get; }
+        }
+
+        public class SpriteAttribute : Attribute
+        {
+            public SpriteAttribute(int width, int height, bool transparent = true)
+            {
+                Width = width;
+                Height = height;
+                Transparent = transparent;
+            }
+            public int Width { get; }
+            public int Height { get; }
+            public bool Transparent { get; }
         }
 
         public abstract class BaseAsset<T> where T : class
         {
+            private readonly object _locker = new object();
             public IReadOnlyList<string> Paths { get; private set; }
+            public SpriteAttribute Sprite { get; private set; }
             private T _value { get; set; }
-            public T Value => _value ?? (_value = Load());
+            public T Value
+            {
+                get
+                {
+                    lock (_locker)
+                        return _value ?? (_value = Load());
+                }
+            }
             protected abstract T Load();
             public static implicit operator T(BaseAsset<T> a) => a.Value;
         }
@@ -49,6 +76,7 @@ namespace AssetExtractor
 
         public AssetManager()
         {
+            RomLoader.EnsureAssetsExist();
             var type = GetType();
 
             PathAttribute lastPath = null;
@@ -58,12 +86,14 @@ namespace AssetExtractor
             {
                 if (property.SetMethod != null && property.PropertyType.BaseType.GetGenericTypeDefinition() == typeof(BaseAsset<>))
                 {
+                    SpriteAttribute sprite = null;
                     foreach (var customAttribute in property.GetCustomAttributes(false))
                     {
                         switch (customAttribute)
                         {
                             case PathAttribute pathAttribute: lastPath = pathAttribute; break;
                             case FileAttribute fileAttribute: lastFiles = fileAttribute; break;
+                            case SpriteAttribute spriteAttribute: sprite = spriteAttribute; break;
                         }
                     }
 
@@ -75,6 +105,11 @@ namespace AssetExtractor
                             lastFiles.Names
                             .Select(n=>System.IO.Path.Combine(lastPath.Path, n))
                             .ToList().AsReadOnly()});
+                    if (sprite != null)
+                        property.PropertyType.BaseType
+                            .GetProperty(nameof(BaseAsset<object>.Sprite))
+                            .SetMethod
+                            .Invoke(instance, new[] { sprite });
                     property.SetMethod.Invoke(this, new[] { instance });
                 }
             }
@@ -85,6 +120,13 @@ namespace AssetExtractor
         public class ModelAsset : BaseAsset<ModelLoader.ModelData>
         {
             protected override ModelLoader.ModelData Load() => ModelLoader.LoadModel(Paths[0]);
+        }
+
+        public class SpriteAsset : BaseAsset<Texture>
+        {
+            protected override Texture Load() => Paths.Count <= 2 ?
+                SpriteLoader.LoadTexture(Paths[0], Paths[1], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false) :
+                SpriteLoader.LoadTexture(Paths[0], Paths[1], Paths[2], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false);
         }
 
         public class TextureIdsAttribute : Attribute

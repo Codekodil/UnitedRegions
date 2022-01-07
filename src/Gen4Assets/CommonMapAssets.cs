@@ -16,7 +16,6 @@ namespace Gen4Assets
         }
 
 
-
         [Path(EGame.Platinum, "fielddata", "build_model", "build_model.narc")]
 
         [File("build_model_4.BMD0")] public ModelAsset HealCenter { get; private set; }

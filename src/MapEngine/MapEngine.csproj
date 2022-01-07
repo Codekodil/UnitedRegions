@@ -57,6 +57,10 @@
       <Project>{CA2F7134-F46B-4810-9CA0-0EAB165791E7}</Project>
       <Name>MapData</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MonsterData\MonsterData.csproj">
+      <Project>{89B213BE-4B34-4B29-BC39-1303F77C3705}</Project>
+      <Name>MonsterData</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

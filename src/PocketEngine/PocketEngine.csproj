@@ -126,6 +126,14 @@
       <Project>{0F5DDAF6-4255-4482-BD6F-03445558293E}</Project>
       <Name>MapGenerator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MonsterBattle\MonsterBattle.csproj">
+      <Project>{D6CD47CB-4F91-4C70-A92F-D26EF636C5E8}</Project>
+      <Name>MonsterBattle</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MonsterData\MonsterData.csproj">
+      <Project>{89B213BE-4B34-4B29-BC39-1303F77C3705}</Project>
+      <Name>MonsterData</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

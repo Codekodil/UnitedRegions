@@ -1,4 +1,5 @@
 ﻿using MapData;
+using MonsterData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace MapEngine
 
         public event Func<bool> ShouldPauseLogic;
         public bool LogicPaused { get; private set; }
+
+        public MonsterBox MonsterTeam { get; } = new MonsterBox(6, true);
 
         public World()
         {

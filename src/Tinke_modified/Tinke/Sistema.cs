@@ -228,7 +228,7 @@ namespace Tinke
             // Add system files (fnt.bin, banner.bin, overlays, arm9 and arm7)
             if (!(root.folders is List<sFolder>))
                 root.folders = new List<sFolder>();
-            //root.folders.Add(Add_SystemFiles(fat));
+            root.folders.Add(Add_SystemFiles(fat));
             DateTime t5 = DateTime.Now;
 
             accion.Root = root;
@@ -266,99 +266,99 @@ namespace Tinke
             //this.Text += "          " + new String(romInfo.Cabecera.gameTitle).Replace("\0", "") +
             //    " (" + new String(romInfo.Cabecera.gameCode) + ')';
         }
-        //private sFolder Add_SystemFiles(Nitro.Estructuras.sFAT[] fatTable)
-        //{
-        //    sFolder ftc = new sFolder();
-        //    ftc.name = "ftc";
-        //    ftc.id = (ushort)accion.LastFolderID;
-        //    accion.LastFolderID++;
-        //    ftc.files = new List<sFile>();
-        //    ftc.files.AddRange(Nitro.Overlay.ReadBasicOverlays(
-        //        accion.ROMFile, romInfo.Cabecera.ARM9overlayOffset, romInfo.Cabecera.ARM9overlaySize, true, fatTable));
-        //    ftc.files.AddRange(Nitro.Overlay.ReadBasicOverlays(
-        //        accion.ROMFile, romInfo.Cabecera.ARM7overlayOffset, romInfo.Cabecera.ARM7overlaySize, false, fatTable));
+        private sFolder Add_SystemFiles(Nitro.Estructuras.sFAT[] fatTable)
+        {
+            sFolder ftc = new sFolder();
+            ftc.name = "ftc";
+            ftc.id = (ushort)accion.LastFolderID;
+            accion.LastFolderID++;
+            ftc.files = new List<sFile>();
+            ftc.files.AddRange(Nitro.Overlay.ReadBasicOverlays(
+                accion.ROMFile, romInfo.Cabecera.ARM9overlayOffset, romInfo.Cabecera.ARM9overlaySize, true, fatTable));
+            ftc.files.AddRange(Nitro.Overlay.ReadBasicOverlays(
+                accion.ROMFile, romInfo.Cabecera.ARM7overlayOffset, romInfo.Cabecera.ARM7overlaySize, false, fatTable));
 
-        //    sFile rom = new sFile();
-        //    rom.name = "rom.nds";
-        //    rom.offset = 0x00;
-        //    rom.size = (uint)new FileInfo(accion.ROMFile).Length;
-        //    rom.path = accion.ROMFile;
-        //    rom.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(rom);
+            sFile rom = new sFile();
+            rom.name = "rom.nds";
+            rom.offset = 0x00;
+            rom.size = (uint)new FileInfo(accion.ROMFile).Length;
+            rom.path = accion.ROMFile;
+            rom.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(rom);
 
-        //    sFile fnt = new sFile();
-        //    fnt.name = "fnt.bin";
-        //    fnt.offset = romInfo.Cabecera.fileNameTableOffset;
-        //    fnt.size = romInfo.Cabecera.fileNameTableSize;
-        //    fnt.path = accion.ROMFile;
-        //    fnt.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(fnt);
+            sFile fnt = new sFile();
+            fnt.name = "fnt.bin";
+            fnt.offset = romInfo.Cabecera.fileNameTableOffset;
+            fnt.size = romInfo.Cabecera.fileNameTableSize;
+            fnt.path = accion.ROMFile;
+            fnt.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(fnt);
 
-        //    sFile fat = new sFile();
-        //    fat.name = "fat.bin";
-        //    fat.offset = romInfo.Cabecera.FAToffset;
-        //    fat.size = romInfo.Cabecera.FATsize;
-        //    fat.path = accion.ROMFile;
-        //    fat.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(fat);
+            sFile fat = new sFile();
+            fat.name = "fat.bin";
+            fat.offset = romInfo.Cabecera.FAToffset;
+            fat.size = romInfo.Cabecera.FATsize;
+            fat.path = accion.ROMFile;
+            fat.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(fat);
 
-        //    sFile banner = new sFile();
-        //    banner.name = "banner.bin";
-        //    banner.offset = romInfo.Cabecera.bannerOffset;
-        //    banner.size = 0x840;
-        //    banner.path = accion.ROMFile;
-        //    banner.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(banner);
+            sFile banner = new sFile();
+            banner.name = "banner.bin";
+            banner.offset = romInfo.Cabecera.bannerOffset;
+            banner.size = 0x840;
+            banner.path = accion.ROMFile;
+            banner.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(banner);
 
-        //    sFile arm9 = new sFile();
-        //    arm9.name = "arm9.bin";
-        //    arm9.offset = romInfo.Cabecera.ARM9romOffset;
-        //    arm9.size = romInfo.Cabecera.ARM9size;
-        //    arm9.path = accion.ROMFile;
-        //    arm9.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(arm9);
+            sFile arm9 = new sFile();
+            arm9.name = "arm9.bin";
+            arm9.offset = romInfo.Cabecera.ARM9romOffset;
+            arm9.size = romInfo.Cabecera.ARM9size;
+            arm9.path = accion.ROMFile;
+            arm9.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(arm9);
 
-        //    sFile arm7 = new sFile();
-        //    arm7.name = "arm7.bin";
-        //    arm7.offset = romInfo.Cabecera.ARM7romOffset;
-        //    arm7.size = romInfo.Cabecera.ARM7size;
-        //    arm7.path = accion.ROMFile;
-        //    arm7.id = (ushort)accion.LastFileID;
-        //    accion.LastFileID++;
-        //    ftc.files.Add(arm7);
+            sFile arm7 = new sFile();
+            arm7.name = "arm7.bin";
+            arm7.offset = romInfo.Cabecera.ARM7romOffset;
+            arm7.size = romInfo.Cabecera.ARM7size;
+            arm7.path = accion.ROMFile;
+            arm7.id = (ushort)accion.LastFileID;
+            accion.LastFileID++;
+            ftc.files.Add(arm7);
 
-        //    if (romInfo.Cabecera.ARM9overlaySize != 0)
-        //    {
-        //        sFile y9 = new sFile();
-        //        y9.name = "y9.bin";
-        //        y9.offset = romInfo.Cabecera.ARM9overlayOffset;
-        //        y9.size = romInfo.Cabecera.ARM9overlaySize;
-        //        y9.path = accion.ROMFile;
-        //        y9.id = (ushort)accion.LastFileID;
-        //        accion.LastFileID++;
-        //        ftc.files.Add(y9);
-        //    }
+            if (romInfo.Cabecera.ARM9overlaySize != 0)
+            {
+                sFile y9 = new sFile();
+                y9.name = "y9.bin";
+                y9.offset = romInfo.Cabecera.ARM9overlayOffset;
+                y9.size = romInfo.Cabecera.ARM9overlaySize;
+                y9.path = accion.ROMFile;
+                y9.id = (ushort)accion.LastFileID;
+                accion.LastFileID++;
+                ftc.files.Add(y9);
+            }
 
-        //    if (romInfo.Cabecera.ARM7overlaySize != 0)
-        //    {
-        //        sFile y7 = new sFile();
-        //        y7.name = "y7.bin";
-        //        y7.offset = romInfo.Cabecera.ARM7overlayOffset;
-        //        y7.size = romInfo.Cabecera.ARM7overlaySize;
-        //        y7.path = accion.ROMFile;
-        //        y7.id = (ushort)accion.LastFileID;
-        //        accion.LastFileID++;
-        //        ftc.files.Add(y7);
-        //    }
+            if (romInfo.Cabecera.ARM7overlaySize != 0)
+            {
+                sFile y7 = new sFile();
+                y7.name = "y7.bin";
+                y7.offset = romInfo.Cabecera.ARM7overlayOffset;
+                y7.size = romInfo.Cabecera.ARM7overlaySize;
+                y7.path = accion.ROMFile;
+                y7.id = (ushort)accion.LastFileID;
+                accion.LastFileID++;
+                ftc.files.Add(y7);
+            }
 
-        //    Set_Format(ftc);
-        //    return ftc;
-        //}
+            //Set_Format(ftc);
+            return ftc;
+        }
         //private void ReadFiles(string[] files)
         //{
         //    toolStripInfoRom.Enabled = false;

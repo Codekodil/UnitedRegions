@@ -1,8 +1,10 @@
-﻿using MapEngine;
+﻿using Gen4Assets;
+using MapEngine;
 using MapGameplay;
+using MonsterBattle;
 using System;
 using UnhedderEngine;
-using UnhedderEngine.Workflows.Core;
+using UnhedderEngine.Input;
 
 namespace GameplaySwitch
 {
@@ -15,6 +17,9 @@ namespace GameplaySwitch
         public event Action<Camera> CameraChange;
         private Camera _lastCamera;
         public bool ShowingWorld { get; private set; }
+        public Assets Assets { get; }
+
+        public MainSwitch(Assets assets) => Assets = assets;
 
         public void EnterWorld(World world)
         {
@@ -27,12 +32,22 @@ namespace GameplaySwitch
             CheckCamera();
         }
 
-        public void SwitchToBattle()
+        public void SwitchToBattle(BattleSeed battle)
         {
             lock (_locker)
             {
                 ShowingWorld = false;
-                _transition.Transition(new Camera { Scene = new Scene() });
+                var battleScene = new BattleScene(battle, Assets);
+                _transition.Transition(battleScene.Camera);
+                battleScene.DoneChanged += () =>
+                {
+                    lock (_locker)
+                    {
+                        _transition.Transition(World.GetSystem<SCameraManager>().GetCamera("main"));
+                        ShowingWorld = true;
+                        CheckCamera();
+                    }
+                };
             }
             CheckCamera();
         }
@@ -45,7 +60,16 @@ namespace GameplaySwitch
                 if (_transition.Camera == _lastCamera) return;
                 changed = _lastCamera = _transition.Camera;
             }
-            CameraChange?.Invoke(changed);
+            Action<FrameData> action = null;
+            action = new Action<FrameData>(_ =>
+            {
+                if (action != null)
+                {
+                    CameraChange?.Invoke(changed);
+                    EventManager.Update -= action;
+                }
+            });
+            EventManager.Update += action;
         }
     }
 }

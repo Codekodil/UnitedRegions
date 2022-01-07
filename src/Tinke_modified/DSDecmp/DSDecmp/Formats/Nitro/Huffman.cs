@@ -89,7 +89,7 @@ namespace DSDecmp.Formats.Nitro
                 throw new InvalidDataException(Main.Get_Traduction("S06"));
 
             treeSize = (treeSize + 1) * 2;
-            
+
             if (readBytes + treeSize >= inLength)
                 throw new InvalidDataException(Main.Get_Traduction("S07"));
 
@@ -98,6 +98,7 @@ namespace DSDecmp.Formats.Nitro
             // the relative offset may be 4 more (when the initial decompressed size is 0), but
             // since it's relative that doesn't matter, especially when it only matters if
             // the given value is odd or even.
+            HuffTreeNode.maxDepth = 1000;
             HuffTreeNode rootNode = new HuffTreeNode(instream, false, 5, treeEnd);
 
             readBytes += treeSize;
@@ -659,6 +660,7 @@ namespace DSDecmp.Formats.Nitro
                 }
             }
 
+            public static int maxDepth;
             /// <summary>
             /// Creates a new node in the Huffman tree.
             /// </summary>
@@ -671,6 +673,8 @@ namespace DSDecmp.Formats.Nitro
             /// this position, the tree is invalid.</param>
             public HuffTreeNode(Stream stream, bool isData, long relOffset, long maxStreamPos)
             {
+                --maxDepth;
+                if (maxDepth < 0) throw new StackOverflowException();
                 /*
                  Tree Table (list of 8bit nodes, starting with the root node)
                     Root Node and Non-Data-Child Nodes are:

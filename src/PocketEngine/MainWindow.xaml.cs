@@ -5,12 +5,13 @@ using MapData;
 using MapEngine;
 using MapGameplay;
 using MapGenerator;
+using MonsterBattle;
+using MonsterData;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using UnhedderEngine;
-using UnhedderEngine.Workflows.Core;
 
 namespace PocketEngine
 {
@@ -25,14 +26,20 @@ namespace PocketEngine
             RomLoader.EnsureAssetsExist();
             InitializeComponent();
 
-            var assets = new CommonMapAssets();
+            var monsterDatabase = new MonsterDatabase();
 
-            var mainSwitch = new MainSwitch();
+            var assets = new Assets();
+
+            var mainSwitch = new MainSwitch(assets);
 
             _world = new World();
             foreach (var type in typeof(CPlayer).Assembly.GetTypes())
                 if (typeof(MapSystem).IsAssignableFrom(type))
                     _world.AddSystem(type);
+
+            _world.MonsterTeam.Add(new Monster(monsterDatabase.Monsters[53], 10));
+            _world.MonsterTeam.Add(new Monster(monsterDatabase.Monsters[398], 90));
+
 
             _world.GetSystem<SCameraManager>().CameraOffset = new Vec3(0, 32, 24);
 
@@ -44,6 +51,7 @@ namespace PocketEngine
 
 
             var player = _world.NewEntity("main");
+            player.Position = new Coord(0, 10);
             player.Add<CPlayer>();
             player.Add<CMovedByInput>();
             player.Add<CMoveable>().Speed = 4;
@@ -51,7 +59,7 @@ namespace PocketEngine
             player.Add<COrientation>().Direction = COrientation.EDirection.Left;
             {
                 var sprite = player.Add<CSprite>();
-                sprite.Textures = assets.FemalePlayer.Value.Frames;
+                sprite.Textures = assets.CommonMapAssets.FemalePlayer.Value.Frames;
                 sprite.RightIndex = 3;
                 sprite.BackwardIndex = 6;
                 sprite.LeftIndex = 9;
@@ -64,7 +72,7 @@ namespace PocketEngine
             {
                 var npc = _world.NewEntity("main");
                 npc.Position = new Coord(i - 2, 5);
-                npc.Add<CSprite>().Textures = assets.FemalePlayer.Value.Frames;
+                npc.Add<CSprite>().Textures = assets.CommonMapAssets.FemalePlayer.Value.Frames;
             }
 
             player.Map = generator.Map;
@@ -72,22 +80,7 @@ namespace PocketEngine
 
             var scene = _world.GetScene("main");
 
-            for (var x = 0; x < 5; ++x)
-                for (var y = 0; y < 5; ++y)
-                {
-                    var material = DefaultMaterials.Textured.Clone();
-                    material.SetAttribute("Albedo", BattleSpriteLoader.LoadSprite((1 + x + y * 5) * 6));
-                    scene.Add(new SingleRenderer
-                    {
-                        Mesh = Mesh.Cube,
-                        Material = material,
-                        Scale = new Vec3(4, 2, 1),
-                        Position = new Vec3(x * 4 + 8, y * 2, -14)
-                    });
-                }
-
-
-            var modelGenerator = new ModelGenerator { CommonMapAssets = assets };
+            var modelGenerator = new ModelGenerator { CommonMapAssets = assets.CommonMapAssets };
             foreach (var renderer in generator.Map.GetChunks().SelectMany(modelGenerator.GenerateRenderers))
                 scene.Add(renderer);
 
@@ -101,7 +94,11 @@ namespace PocketEngine
 
             _world.GetSystem<SPlayer>().StepOntoTallGrass += p =>
             {
-                mainSwitch.SwitchToBattle();
+                var opponent = new MonsterBox(6, true);
+                opponent.Add(new Monster(monsterDatabase.Monsters[78], 10));
+                opponent.Add(new Monster(monsterDatabase.Monsters[193], 50));
+                var battle = new BattleSeed(_world.MonsterTeam, opponent);
+                mainSwitch.SwitchToBattle(battle);
             };
 
             Camera cameraWide = new Camera { Position = Vec3.Up * 100, Rotation = Quaternion.LookAt(new Vec3(0, -4, -3), Vec3.Up), Scene = scene };

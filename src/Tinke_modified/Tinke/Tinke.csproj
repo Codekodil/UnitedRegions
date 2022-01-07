@@ -337,30 +337,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="langs\en-us.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\en-us.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\es-es.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\es-es.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\fr-fr.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\fr-fr.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\it-it.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="langs\it-it.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="langs\en-us.png" />
+    <Content Include="langs\en-us.xml" />
+    <Content Include="langs\es-es.png" />
+    <Content Include="langs\es-es.xml" />
+    <Content Include="langs\fr-fr.png" />
+    <Content Include="langs\fr-fr.xml" />
+    <Content Include="langs\it-it.png" />
+    <Content Include="langs\it-it.xml" />
     <Content Include="nintendo-ds.ico" />
     <Content Include="Nitro\MakerCodes.txt" />
     <None Include="Resources\compress.png" />
