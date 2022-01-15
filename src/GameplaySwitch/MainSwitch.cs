@@ -60,16 +60,7 @@ namespace GameplaySwitch
                 if (_transition.Camera == _lastCamera) return;
                 changed = _lastCamera = _transition.Camera;
             }
-            Action<FrameData> action = null;
-            action = new Action<FrameData>(_ =>
-            {
-                if (action != null)
-                {
-                    CameraChange?.Invoke(changed);
-                    EventManager.Update -= action;
-                }
-            });
-            EventManager.Update += action;
+            EventManager.NextUpdate(() => CameraChange?.Invoke(changed));
         }
     }
 }

@@ -8,6 +8,6 @@ namespace Gen4Assets
 
 
         [File("pl_batt_bg_3.bin/pl_batt_bg_3.bin", "pl_batt_bg_172.RLCN", "pl_batt_bg_2.bin/pl_batt_bg_2.bin")]
-        [Sprite(256, 160, false)] public SpriteAsset ForestDay { get; private set; }
+        [Sprite(256, 160, Transparent = false)] public SpriteAsset ForestDay { get; private set; }
     }
 }

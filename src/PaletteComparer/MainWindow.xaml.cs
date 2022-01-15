@@ -1,4 +1,5 @@
 ﻿using AssetExtractor;
+using Images;
 using Microsoft.Win32;
 using System;
 using System.Drawing;
@@ -45,18 +46,27 @@ namespace PaletteComparer
             displays.Children.Clear();
             foreach (var p in _paletteFiles)
             {
-                var bitmap = SpriteLoader.LoadBitmap(_imageFile, p, _mapFile, _width, _height, false);
-                var panel = new StackPanel();
-                panel.Children.Add(new Image
+                var palette = new NCLR(p, 0);
+
+                for (var i = 0; i < Math.Max(1, palette.NumberOfPalettes); ++i)
                 {
-                    Source = Convert(bitmap),
-                    Width = Math.Max(512, _width)
-                });
-                panel.Children.Add(new Label
-                {
-                    Content = Path.GetFileName(p)
-                });
-                displays.Children.Add(panel);
+                    var bitmap = _mapFile == null ?
+                        SpriteLoader.LoadBitmap(_imageFile, p, i, _width, _height, false) :
+                        SpriteLoader.LoadBitmap(_imageFile, p, _mapFile, _width, _height, false);
+                    var panel = new StackPanel();
+                    panel.Children.Add(new Image
+                    {
+                        Source = Convert(bitmap),
+                        Width = Math.Max(512, _width)
+                    });
+                    panel.Children.Add(new Label
+                    {
+                        Content = Path.GetFileName(p) + (palette.NumberOfPalettes > 1 ? $"[{i}]" : "")
+                    });
+                    displays.Children.Add(panel);
+
+                    if (_mapFile != null) break;
+                }
             }
         }
 

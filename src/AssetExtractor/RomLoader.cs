@@ -13,11 +13,27 @@ namespace AssetExtractor
         private static object _locker = new object();
         public const string PlatinumPath = "platinum_assets";
         public const string HgSsPath = "hgss_assets";
+        private static bool _assetsChecked;
+        private static string _basePathOverride;
+        public static string BasePathOverride
+        {
+            get => _basePathOverride;
+            set
+            {
+                lock (_locker)
+                {
+                    if (_assetsChecked) throw new Exception("assests where already extracted");
+                    _basePathOverride = value;
+                }
+            }
+        }
 
         private static void EnsureRomExtracted(string path, string displayName, params string[] internalEdition)
         {
             lock (_locker)
             {
+                if (BasePathOverride != null)
+                    path = Path.Combine(BasePathOverride, path);
                 var successPath = Path.Combine(path, "extracted.bin");
                 if (File.Exists(successPath))
                     return;
@@ -82,7 +98,6 @@ namespace AssetExtractor
                 }
             }
         }
-        private static bool _assetsChecked;
         public static void EnsureAssetsExist()
         {
             lock (_locker)

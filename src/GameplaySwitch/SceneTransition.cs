@@ -35,7 +35,7 @@ vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
 vec4 Fragment()
 {
     vec4 color = texture(Albedo, uv);
-    vec3 bufferColor = texture(Buffer, (start.xy * vec2(min(1.0, Ratio / DesiredRatio), 1.0) + vec2(1.0, 1.0)) * 0.5).xyz;
+    vec3 bufferColor = texture(Buffer, (start.xy + vec2(1.0, 1.0)) * 0.5).xyz;
     if(color.a < 0.5)
         discard;
     return vec4(mix(bufferColor, color.xyz, ColorAnimation), 1.0);
@@ -54,7 +54,7 @@ vec4 Fragment()
         }
 
         private readonly object _locker = new object();
-        private readonly Framebuffer _originDisplay = new Framebuffer(2520, 1080, false, EColorAttachment.RGB);
+        private readonly Framebuffer _originDisplay = new Framebuffer(1920, 1080, false, EColorAttachment.RGB);
         private TransitionData? _currentTransition;
 
         private void RemoveTransition()
@@ -114,7 +114,7 @@ vec4 Fragment()
         {
             lock (_locker)
             {
-                _originDisplay.Camera = Camera;
+                _originDisplay.Camera = null;
                 Camera = camera;
             }
         }
@@ -124,7 +124,9 @@ vec4 Fragment()
             {
                 if (camera == Camera) return;
 
+                var cameraResolution = Camera.AverageDisplaySize;
                 _originDisplay.Camera = Camera;
+                _originDisplay.RatioOverride = (cameraResolution?.X / cameraResolution?.Y) ?? 1;
                 Camera = camera;
 
                 var scene = camera?.Scene as Scene;

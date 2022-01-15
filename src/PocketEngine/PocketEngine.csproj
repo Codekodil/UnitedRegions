@@ -110,6 +110,10 @@
       <Project>{6946F7A0-D327-40B8-8762-DF5D5E9EBD4C}</Project>
       <Name>Gen4Assets</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GuiEngine\GuiEngine.csproj">
+      <Project>{B64D7EC8-7035-46F9-9A33-C4697AE120A4}</Project>
+      <Name>GuiEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MapData\MapData.csproj">
       <Project>{CA2F7134-F46B-4810-9CA0-0EAB165791E7}</Project>
       <Name>MapData</Name>

@@ -1,19 +1,17 @@
 ﻿using Images;
-using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 using UnhedderEngine;
-using static UnhedderEngine.BaseTexture;
 
 namespace AssetExtractor
 {
     public static class SpriteLoader
     {
-        public static Bitmap LoadBitmap(string imagePath, string palettePath, int? width, int? height, bool transparent) =>
-            LoadBitmap(imagePath, palettePath, null, width, height, transparent);
-        public static Bitmap LoadBitmap(string imagePath, string palettePath, string mapPath, int? width, int? height, bool transparent)
+        public static Bitmap LoadBitmap(string imagePath, string palettePath, int paletteIndex, int? width, int? height, bool transparent, Rectangle? crop = null) =>
+            LoadBitmap(imagePath, palettePath, paletteIndex, null, width, height, transparent, crop);
+        public static Bitmap LoadBitmap(string imagePath, string palettePath, string mapPath, int? width, int? height, bool transparent, Rectangle? crop = null) =>
+            LoadBitmap(imagePath, palettePath, 0, mapPath, width, height, transparent, crop);
+        private static Bitmap LoadBitmap(string imagePath, string palettePath, int paletteIndex, string mapPath, int? width, int? height, bool transparent, Rectangle? crop)
         {
             string mapHeader = null;
             if (mapPath != null)
@@ -26,6 +24,11 @@ namespace AssetExtractor
 
             var image = new NCGR(imagePath, 0);
             var palette = new NCLR(palettePath, 0);
+
+            paletteIndex = palette.NumberOfPalettes > 1 ? paletteIndex % palette.NumberOfPalettes : 0;
+            for (int j = 0; j < image.TilesPalette.Length; j++)
+                image.TilesPalette[j] = (byte)paletteIndex;
+
             Bitmap bitmap;
             switch (mapHeader)
             {
@@ -37,7 +40,7 @@ namespace AssetExtractor
                     break;
                 case "RECN":
                     var sprite = new NCER(mapPath, 0);
-                    bitmap = (Bitmap)sprite.Get_Image(image, palette, 0, width??512, height??256, false, false, false, transparent, true);
+                    bitmap = (Bitmap)sprite.Get_Image(image, palette, 0, width ?? 512, height ?? 256, false, false, false, transparent, true);
                     break;
                 default:
                     if (width.HasValue) image.Width = width.Value;
@@ -46,65 +49,28 @@ namespace AssetExtractor
                     break;
             }
             if (transparent)
-                bitmap.MakeTransparent(palette.Palette[0][0]);
-            return bitmap;
+                bitmap.MakeTransparent(palette.Palette[paletteIndex][0]);
+            return crop.HasValue ? Crop(bitmap, crop.Value) : bitmap;
         }
-        public static Texture LoadTexture(string imagePath, string palettePath, int? width, int? height, bool transparent) =>
-            LoadTexture(imagePath, palettePath, null, width, height, transparent);
-        public static Texture LoadTexture(string imagePath, string palettePath, string mapPath, int? width, int? height, bool transparent)
+
+        private static Bitmap Crop(Bitmap bitmap, Rectangle rectangle)
         {
-            var bitmap = LoadBitmap(imagePath, palettePath, mapPath, width, height, transparent);
-            var widthBitmap = 1;
-            var heightBitmap = 1;
-            var step = 1;
-            byte[] pixels = null;
-            widthBitmap = bitmap.Width;
-            heightBitmap = bitmap.Height;
+            var cropped = new Bitmap(rectangle.Width, rectangle.Height);
+            for (var x = 0; x < cropped.Width; ++x)
+                for (var y = 0; y < cropped.Height; ++y)
+                    cropped.SetPixel(x, y, bitmap.GetPixel(x + rectangle.X, y + rectangle.Y));
+            return cropped;
+        }
 
-            var pixelCount = widthBitmap * heightBitmap;
-            var rect = new Rectangle(0, 0, widthBitmap, heightBitmap);
-
-            var depth = Image.GetPixelFormatSize(bitmap.PixelFormat);
-            if (depth != 8 && depth != 24 && depth != 32) throw new BadImageFormatException($"image depth {depth} not supported");
-
-            var data = bitmap.LockBits(rect, ImageLockMode.ReadOnly, bitmap.PixelFormat);
-
-            step = depth / 8;
-            pixels = new byte[pixelCount * step];
-
-            Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
-
-            var flipBuffer = new byte[heightBitmap];
-            for (var x = 0; x < widthBitmap * step; x++)
-            {
-                int index(int y) => x + y * widthBitmap * step;
-                for (var y = 0; y < heightBitmap; y++)
-                    flipBuffer[y] = pixels[index(heightBitmap - 1 - y)];
-                for (var y = 0; y < heightBitmap; y++)
-                    pixels[index(y)] = flipBuffer[y];
-            }
-
-            if (step == 3)
-                for (var i = 0; i < pixelCount; i++)
-                {
-                    var temp = pixels[i * 3];
-                    pixels[i * 3] = pixels[i * 3 + 2];
-                    pixels[i * 3 + 2] = temp;
-                }
-            else if (step == 4)
-            {
-                for (var i = 0; i < pixelCount; i++)
-                {
-                    var temp = pixels[i * 4];
-                    pixels[i * 4] = pixels[i * 4 + 2];
-                    pixels[i * 4 + 2] = temp;
-                }
-            }
-            bitmap.UnlockBits(data);
-
-            var result = new Texture { Interpolation = false };
-            result.ApplyNewData(widthBitmap, heightBitmap, pixels, (EColorChannel)step);
-            return result;
+        public static Texture LoadTexture(string imagePath, string palettePath, int paletteIndex, int? width, int? height, bool transparent, Rectangle? crop = null) =>
+            LoadTexture(imagePath, palettePath, paletteIndex, null, width, height, transparent, crop);
+        public static Texture LoadTexture(string imagePath, string palettePath, string mapPath, int? width, int? height, bool transparent, Rectangle? crop = null) =>
+            LoadTexture(imagePath, palettePath, 0, mapPath, width, height, transparent, crop);
+        private static Texture LoadTexture(string imagePath, string palettePath, int paletteIndex, string mapPath, int? width, int? height, bool transparent, Rectangle? crop)
+        {
+            var texture = Texture.Open(LoadBitmap(imagePath, palettePath, paletteIndex, mapPath, width, height, transparent, crop));
+            texture.Interpolation = false;
+            return texture;
         }
     }
 }

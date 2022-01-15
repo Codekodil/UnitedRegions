@@ -22,56 +22,85 @@ namespace MonsterBattle
                 new uint[] { 0, 1, 2, 2, 1, 3 });
         }
 
+        public Monster Monster { get; }
+
         public BattleScene BattleScene { get; }
         public SingleRenderer MonsterRenderer { get; }
-        public SingleRenderer HealthRenderer { get; }
 
-        public float FrontHeightOffset { get; private set; }
-        public float BackHeightOffset { get; private set; }
+        public float SpriteFrontHeightOffset { get; private set; }
+        public float SpriteBackHeightOffset { get; private set; }
+
+        private float _backHeightOffset;
+        public float BackHeightOffset
+        {
+            get => _backHeightOffset;
+            set
+            {
+                _backHeightOffset = value;
+                UpdatePosition();
+            }
+        }
+        public float HeightOffset => ShowBack ? SpriteBackHeightOffset + BackHeightOffset : SpriteFrontHeightOffset;
+
+        public Texture FrontTexture { get; private set; }
+        public Texture BackTexture { get; private set; }
+
+        private Vec3 _origin;
+        public Vec3 Origin
+        {
+            get => _origin;
+            set
+            {
+                _origin = value;
+                UpdatePosition();
+            }
+        }
+
+        private bool _showBack;
+        public bool ShowBack
+        {
+            get => _showBack;
+            set
+            {
+                _showBack = value;
+                var texture = _showBack ? BackTexture : FrontTexture;
+                if (texture != null)
+                    MonsterRenderer.Material.SetAttribute("Albedo", texture);
+                UpdatePosition();
+            }
+        }
+
+        private void UpdatePosition()
+        {
+            MonsterRenderer.Position = Origin + Vec3.Up * HeightOffset;
+        }
+
         public float Width { get; private set; } = 1;
 
         public MonsterDisplay(BattleScene scene, Monster monster, bool opponent, bool primary)
         {
+            Monster = monster;
             BattleScene = scene;
             MonsterRenderer = new SingleRenderer
             {
                 Mesh = _spriteMesh,
-                Material = new Material(CustomShader.CutoffShader)
+                Material = new Material(CustomShader.CutoffShader),
+                Enabled = false
             };
-
-            const float height = .15f;
-            HealthRenderer = new SingleRenderer
-            {
-                Mesh = ScreenSquare,
-                Material = new Material(CustomShader.GuiShader)
-                {
-                    { "Alignment", opponent ? -1f : 1f }
-                },
-                Position = new Vec3(
-                    primary ? (opponent ? -1 : 1) * (height * .5f) : 0f,
-                    (opponent ? 1f - 3 * height : height - 1f) + (primary ? 0f : height * 2),
-                    0),
-                Scale = new Vec3(4, 1, 4) * height,
-                Order = 1000
-            };
-            new Thread(() =>
-                HealthRenderer.Material.SetAttribute("Albedo", (opponent ?
-                    BattleScene.Assets.CommonBattleAssets.OpponentHealthDisplay :
-                    BattleScene.Assets.CommonBattleAssets.PlayerHealthDisplay)
-                    .Value)).Start();
 
             new Thread(() =>
             {
                 var sprites = monster.LoadBattleTexture();
-                MonsterRenderer.Material.SetAttribute("Albedo", sprites.Front.Texture);
-                FrontHeightOffset = -sprites.Front.MinBoundingBox.Y;
-                BackHeightOffset = -sprites.Back.MinBoundingBox.Y;
+                FrontTexture = sprites.Front.Texture;
+                BackTexture = sprites.Back.Texture;
+                SpriteFrontHeightOffset = -sprites.Front.MinBoundingBox.Y;
+                SpriteBackHeightOffset = -sprites.Back.MinBoundingBox.Y;
                 Width = sprites.Front.MaxBoundingBox.X - sprites.Front.MinBoundingBox.X;
-                MonsterRenderer.Position += Vec3.OneY * FrontHeightOffset;
+                ShowBack = ShowBack;
+                MonsterRenderer.Enabled = true;
             }).Start();
 
             BattleScene.Scene.Add(MonsterRenderer);
-            BattleScene.Scene.Add(HealthRenderer);
         }
     }
 }

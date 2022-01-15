@@ -10,7 +10,7 @@ namespace AssetExtractor
         public static List<string> LoadPlatinumMessage(int id)
         {
             RomLoader.EnsureAssetsExist();
-            return LoadMessage(Path.Combine(RomLoader.PlatinumPath, "msgdata", "pl_msg.narc", $"pl_msg_{id}.bin"));
+            return LoadMessage(Path.Combine(RomLoader.BasePathOverride ?? "", RomLoader.PlatinumPath, "msgdata", "pl_msg.narc", $"pl_msg_{id}.bin"));
         }
 
         public static List<string> LoadMessage(string path)

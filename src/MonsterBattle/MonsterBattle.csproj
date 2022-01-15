@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,6 +59,14 @@
     <ProjectReference Include="..\Gen4Assets\Gen4Assets.csproj">
       <Project>{6946F7A0-D327-40B8-8762-DF5D5E9EBD4C}</Project>
       <Name>Gen4Assets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GuiDesign\GuiDesign.csproj">
+      <Project>{4FAB5F76-F825-4E33-B6F0-092BC948A471}</Project>
+      <Name>GuiDesign</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GuiEngine\GuiEngine.csproj">
+      <Project>{B64D7EC8-7035-46F9-9A33-C4697AE120A4}</Project>
+      <Name>GuiEngine</Name>
     </ProjectReference>
     <ProjectReference Include="..\MonsterData\MonsterData.csproj">
       <Project>{89B213BE-4B34-4B29-BC39-1303F77C3705}</Project>

@@ -23,6 +23,8 @@ namespace PocketEngine
         private World _world;
         public MainWindow()
         {
+            CoreLogger.OnLog += m => System.Diagnostics.Debug.WriteLine(m);
+
             RomLoader.EnsureAssetsExist();
             InitializeComponent();
 
@@ -95,13 +97,13 @@ namespace PocketEngine
             _world.GetSystem<SPlayer>().StepOntoTallGrass += p =>
             {
                 var opponent = new MonsterBox(6, true);
+                opponent.Add(new Monster(monsterDatabase.Monsters[193], 50) { Nickname = "Woopy Boi" });
                 opponent.Add(new Monster(monsterDatabase.Monsters[78], 10));
-                opponent.Add(new Monster(monsterDatabase.Monsters[193], 50));
                 var battle = new BattleSeed(_world.MonsterTeam, opponent);
                 mainSwitch.SwitchToBattle(battle);
             };
 
-            Camera cameraWide = new Camera { Position = Vec3.Up * 100, Rotation = Quaternion.LookAt(new Vec3(0, -4, -3), Vec3.Up), Scene = scene };
+            Camera cameraWide = new Camera { Position = new Vec3(40, 70, 30), Rotation = Quaternion.LookAt(new Vec3(0, -5, -3), Vec3.Up), Scene = scene };
             Camera cameraAngle = new Camera { Position = Vec3.Up * 10, Rotation = Quaternion.LookAt(new Vec3(-1, -1, -2), Vec3.Up), Scene = scene };
 
             DataContext = new { cameraWide, cameraAngle };

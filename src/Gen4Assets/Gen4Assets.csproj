@@ -49,6 +49,7 @@
     <Compile Include="Assets.cs" />
     <Compile Include="BattleBackgroundAssets.cs" />
     <Compile Include="CommonBattleAssets.cs" />
+    <Compile Include="CommonGuiAssets.cs" />
     <Compile Include="TransitionAssets.cs" />
     <Compile Include="CommonMapAssets.cs" />
     <Compile Include="CustomModelAsset.cs" />

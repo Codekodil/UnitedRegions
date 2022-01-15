@@ -13,9 +13,9 @@ namespace AssetExtractor
         public static BattleSprite LoadSprite(int id, bool backSide, bool female, bool shiny)
         {
             RomLoader.EnsureAssetsExist();
-            using (var spriteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + (backSide ? 0 : 2) + (female ? 0 : 1)}.RGCN")))
+            using (var spriteStream = File.OpenRead(Path.Combine(RomLoader.BasePathOverride ?? "", RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + (backSide ? 0 : 2) + (female ? 0 : 1)}.RGCN")))
             {
-                using (var paletteStream = File.OpenRead(Path.Combine(RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + 4 + (shiny ? 1 : 0)}.RLCN")))
+                using (var paletteStream = File.OpenRead(Path.Combine(RomLoader.BasePathOverride ?? "", RomLoader.PlatinumPath, "poketool", "pokegra", "pl_pokegra.narc", $"pl_pokegra_{id * 6 + 4 + (shiny ? 1 : 0)}.RLCN")))
                 {
                     return LoadSprite(spriteStream, paletteStream);
                 }

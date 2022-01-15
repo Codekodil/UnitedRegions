@@ -11,6 +11,7 @@ uniform mat4 Projection;
 uniform vec3 Color = vec3(1.0, 1.0, 1.0);
 uniform sampler2D Albedo;
 uniform float InverseTextureScale = 1.0;
+uniform vec2 TextureOffset = vec2(0.0, 0.0);
 
 vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
 {
@@ -19,7 +20,7 @@ vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
 
 vec4 Fragment()
 {
-    vec4 texColor = texture(Albedo, uv * InverseTextureScale);
+    vec4 texColor = texture(Albedo, (uv + TextureOffset) * InverseTextureScale);
     if(texColor.a < 0.5)
         discard;
     return texColor * vec4(Color, 1.0);
@@ -34,18 +35,39 @@ define DisableFaceCulling;
 uniform instanced mat4 Model;
 uniform vec3 Color = vec3(1.0, 1.0, 1.0);
 uniform sampler2D Albedo;
-uniform float Alignment = 0.0;
 uniform float Ratio;
 
 vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
 {
-    vec4 transformed = Model * vec4(position - vec3(Alignment, 0.0, 0.0), 1.0);
-    return vec4(transformed.x / Ratio, transformed.y, transformed.z, 1.0) + vec4(Alignment, 0.0, 0.0, 0.0);
+    return Model * vec4(position.x / Ratio, position.y, position.z, 1.0);
 }
 
 vec4 Fragment()
 {
-    return texture(Albedo, uv);
+    return texture(Albedo, uv) * vec4(Color, 1.0);
+}
+");
+
+        public static Shader GuiFontShader = new Shader(@"
+define AlphaBlend;
+define DisableDepthTest;
+define DisableFaceCulling;
+
+uniform instanced mat4 Model;
+uniform vec3 Color = vec3(1.0, 1.0, 1.0);
+uniform sampler2D Albedo;
+uniform float Ratio;
+
+vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
+{
+    return Model * vec4(position.x / Ratio, position.y, position.z, 1.0);
+}
+
+vec4 Fragment()
+{
+    if(texture(Albedo, uv).b < 0.5)
+        discard;
+    return vec4(Color, 1.0);
 }
 ");
 
@@ -204,10 +226,10 @@ vec4 Vertex(vec3 position, vec2 uv, vec3 normal, vec3 tangent)
 
 vec4 Fragment()
 {
-    float x = (atan(worldPos.x, worldPos.z) / Pi + 1.0) * 0.75;
+    float x = mod((atan(worldPos.x, worldPos.z) / Pi + 1.0) * 2.25, 1.5);
     float weight = smoothstep(0.0, 1.0, clamp(2.0 - abs(-x * 4.0 + 2.0), 0.0, 1.0));
     float y = atan(length(worldPos.xz), worldPos.y) / Pi;
-    y = 1.0 - abs(y * 1.5 - 0.5);
+    y = 1.0 - abs(y * 1.6 - 0.6);
     return mix(
         texture(Albedo, vec2(mod(x + 0.75, 1.5), y)),
         texture(Albedo, vec2(x, y)),

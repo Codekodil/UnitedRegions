@@ -36,8 +36,8 @@ namespace MapData
                 return _chunks.TryGetValue(pos, out var chunk) ? chunk : null;
         }
 
-        public static int ChunkCoord(int a) => a < 0 ? a / MapChunk.ChunkSize - 1 : a / MapChunk.ChunkSize;
-        public static int TileCoord(int a) => a < 0 ? a % MapChunk.ChunkSize + MapChunk.ChunkSize : a % MapChunk.ChunkSize;
+        public static int ChunkCoord(int a) => a < 0 ? -1 - ((-1 - a) / MapChunk.ChunkSize) : a / MapChunk.ChunkSize;
+        public static int TileCoord(int a) => a < 0 ? (a + 1) % MapChunk.ChunkSize + MapChunk.ChunkSize - 1 : a % MapChunk.ChunkSize;
 
         public ETile GetTile(Coord pos) => GetTile(pos.X, pos.Y);
         public ETile GetTile(int x, int y) => GetChunkNullable(ChunkCoord(x), ChunkCoord(y))?.GetTile(TileCoord(x), TileCoord(y)) ?? default;

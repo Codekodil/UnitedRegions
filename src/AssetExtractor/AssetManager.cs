@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using UnhedderEngine;
@@ -44,15 +45,27 @@ namespace AssetExtractor
 
         public class SpriteAttribute : Attribute
         {
-            public SpriteAttribute(int width, int height, bool transparent = true)
+            public SpriteAttribute() { }
+            public SpriteAttribute(int width, int height)
             {
                 Width = width;
                 Height = height;
-                Transparent = transparent;
             }
-            public int Width { get; }
-            public int Height { get; }
-            public bool Transparent { get; }
+            public SpriteAttribute(int cropX, int cropY, int cropWidth, int cropHeight)
+            {
+                Crop = (cropX, cropY, cropWidth, cropHeight);
+            }
+            public SpriteAttribute(int width, int height, int cropX, int cropY, int cropWidth, int cropHeight)
+            {
+                Width = width;
+                Height = height;
+                Crop = (cropX, cropY, cropWidth, cropHeight);
+            }
+            public int? Width { get; set; }
+            public int? Height { get; set; }
+            public bool Transparent { get; set; } = true;
+            public int PaletteIndex { get; set; }
+            public (int X, int Y, int Width, int Height)? Crop { get; }
         }
 
         public abstract class BaseAsset<T> where T : class
@@ -103,7 +116,7 @@ namespace AssetExtractor
                         .SetMethod
                         .Invoke(instance, new[] {
                             lastFiles.Names
-                            .Select(n=>System.IO.Path.Combine(lastPath.Path, n))
+                            .Select(n=>System.IO.Path.Combine(RomLoader.BasePathOverride??"",lastPath.Path, n))
                             .ToList().AsReadOnly()});
                     if (sprite != null)
                         property.PropertyType.BaseType
@@ -124,9 +137,13 @@ namespace AssetExtractor
 
         public class SpriteAsset : BaseAsset<Texture>
         {
+            private Rectangle? Crop => Sprite?.Crop != null ? new Rectangle(Sprite.Crop.Value.X, Sprite.Crop.Value.Y, Sprite.Crop.Value.Width, Sprite.Crop.Value.Height) : (Rectangle?)null;
             protected override Texture Load() => Paths.Count <= 2 ?
-                SpriteLoader.LoadTexture(Paths[0], Paths[1], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false) :
-                SpriteLoader.LoadTexture(Paths[0], Paths[1], Paths[2], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false);
+                SpriteLoader.LoadTexture(Paths[0], Paths[1], Sprite.PaletteIndex, Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false, Crop) :
+                SpriteLoader.LoadTexture(Paths[0], Paths[1], Paths[2], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false, Crop);
+            public Bitmap LoadBitmap() => Paths.Count <= 2 ?
+                SpriteLoader.LoadBitmap(Paths[0], Paths[1], Sprite.PaletteIndex, Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false, Crop) :
+                SpriteLoader.LoadBitmap(Paths[0], Paths[1], Paths[2], Sprite?.Width, Sprite?.Height, Sprite?.Transparent ?? false, Crop);
         }
 
         public class TextureIdsAttribute : Attribute
@@ -184,6 +201,11 @@ namespace AssetExtractor
 
                 return instance;
             }
+        }
+
+        public class FontAsset : BaseAsset<FontData>
+        {
+            protected override FontData Load() => FontLoader.LoadFont(Paths[0]);
         }
 
         private static void CallAfterInit(object asset) =>

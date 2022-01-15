@@ -54,6 +54,8 @@
     <Compile Include="AssetManager.cs" />
     <Compile Include="BattleSprite.cs" />
     <Compile Include="BattleSpriteLoader.cs" />
+    <Compile Include="FontData.cs" />
+    <Compile Include="FontLoader.cs" />
     <Compile Include="MessageLoader.cs" />
     <Compile Include="ModelLoader.cs" />
     <Compile Include="ProgressBarWindow.xaml.cs">
@@ -72,6 +74,10 @@
     <ProjectReference Include="..\Tinke_modified\Ekona\Ekona.csproj">
       <Project>{736010D3-F72F-4C56-B8D2-2EDD1B8F3A87}</Project>
       <Name>Ekona</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tinke_modified\Fonts\Fonts\Fonts.csproj">
+      <Project>{C0153427-BCCE-4CD1-887C-47B140B9B317}</Project>
+      <Name>Fonts</Name>
     </ProjectReference>
     <ProjectReference Include="..\Tinke_modified\Images\Images.csproj">
       <Project>{8BB5DA4B-5B71-4993-8941-4F38D4E6C81B}</Project>
